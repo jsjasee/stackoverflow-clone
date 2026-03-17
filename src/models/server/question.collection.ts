@@ -19,75 +19,58 @@ export default async function createQuestionTable() {
     ],
     rowSecurity: false, // set true only if you want row-level permissions
     enabled: true,
+    // instead of multiple await like in the other collection.ts, you can just specify what columns AND indexes you want to create directly in the .createTable function! wow!
+    columns: [
+      {
+        key: "title",
+        type: "string",
+        size: 500,
+        required: true,
+      },
+      {
+        key: "content",
+        type: "string",
+        size: 10000,
+        required: true,
+      },
+      {
+        key: "authorId",
+        type: "string",
+        size: 50,
+        required: true,
+      },
+      {
+        key: "tags",
+        type: "string",
+        size: 50,
+        required: true,
+        array: true,
+        xdefault: undefined,
+      },
+      {
+        key: "attachmentId",
+        type: "string",
+        size: 50,
+        required: false,
+      },
+    ],
+    indexes: [
+      {
+        key: "title",
+        type: IndexType.Fulltext,
+        attributes: ["title"],
+        orders: ["ASC"],
+      },
+      {
+        key: "content",
+        type: IndexType.Fulltext,
+        attributes: ["content"],
+        orders: ["ASC"],
+      },
+    ],
   });
 
-  console.log("Question table is created");
-
-  // create attributes
-  // size is the maximum number of characters allowed for that field
-
-  await tablesDB.createVarcharColumn({
-    databaseId: db,
-    tableId: questionCollection,
-    key: "title",
-    size: 500,
-    required: true,
-  });
-
-  await tablesDB.createVarcharColumn({
-    databaseId: db,
-    tableId: questionCollection,
-    key: "content", // a text column has no limits - for longer text content
-    size: 10000,
-    required: true,
-  });
-
-  await tablesDB.createVarcharColumn({
-    databaseId: db,
-    tableId: questionCollection,
-    key: "authorId",
-    size: 50,
-    required: true,
-  });
-
-  await tablesDB.createVarcharColumn({
-    databaseId: db,
-    tableId: questionCollection,
-    key: "tags",
-    size: 50,
-    required: true,
-    xdefault: undefined, // default value if none is given.
-    array: true, // this column stores an array of strings ?
-  });
-
-  await tablesDB.createVarcharColumn({
-    databaseId: db,
-    tableId: questionCollection,
-    key: "attachmentId",
-    size: 50,
-    required: false,
-  });
-
-  console.log("Question attributes / columns created.");
-
-  // Create Indexes -- if it does not work, can be done manually in the appwrite website -> indexes are just a way of how appwrite searches the things in the database
-  await tablesDB.createIndex({
-    databaseId: db,
-    tableId: questionCollection,
-    key: "title", // name for this index, can use this key to edit the index later?
-    type: IndexType.Fulltext,
-    columns: ["title"],
-    orders: [OrderBy.Asc], // arrange searches in ascending order?
-  });
-
-  await tablesDB.createIndex({
-    databaseId: db,
-    tableId: questionCollection,
-    key: "content",
-    type: IndexType.Fulltext,
-    columns: ["content"],
-    orders: [OrderBy.Asc],
-  });
+  console.log("Question table with columns and indexes created.");
 }
 
 // Permission - 'any' is just anyone that visits the page, 'users' is those who are logged in, these 2 are the defaults i guess (can add if you need more) ?
