@@ -13,6 +13,9 @@ import {
 // the env file ensures that the contents are typescript safe?
 // what is account used for? did we event it up..?
 
+console.log("endpoint:", env.appwrite.endpoint);
+console.log("projectId:", env.appwrite.projectId);
+
 const client = new Client()
   .setEndpoint(env.appwrite.endpoint) // Your API Endpoint
   .setProject(env.appwrite.projectId); // Your project ID

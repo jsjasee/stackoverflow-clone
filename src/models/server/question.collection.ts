@@ -34,10 +34,11 @@ export default async function createQuestionTable() {
     required: true,
   });
 
-  await tablesDB.createTextColumn({
+  await tablesDB.createVarcharColumn({
     databaseId: db,
     tableId: questionCollection,
     key: "content", // a text column has no limits - for longer text content
+    size: 10000,
     required: true,
   });
 
