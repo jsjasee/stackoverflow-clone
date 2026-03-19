@@ -3,7 +3,7 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-const inter = Inter({subsets:['latin'],variable:'--font-sans'});
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,7 +21,8 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-  children,
+  children, // the layout function accepts a children, this children is react nodes, HOW we display them is up to us.
+  // if we want we can wrap the entire children in a nav bar, by write <nav> around the children i guess
 }: Readonly<{
   children: React.ReactNode;
 }>) {
