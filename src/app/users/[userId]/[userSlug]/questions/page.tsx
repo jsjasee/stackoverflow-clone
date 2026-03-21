@@ -6,7 +6,7 @@ import {
   questionCollection,
   voteCollection,
 } from "@/src/models/name";
-import { databases, users } from "@/src/models/server/config";
+import { tablesDB, users } from "@/src/models/server/config";
 import { UserPrefs } from "@/src/store/Auth";
 import { Query } from "node-appwrite";
 import React from "react";
@@ -27,25 +27,33 @@ const Page = async ({
     Query.limit(25),
   ];
 
-  const questions = await databases.listDocuments(
-    db,
-    questionCollection,
+  const questions = await tablesDB.listRows({
+    databaseId: db,
+    tableId: questionCollection,
     queries,
-  );
+  });
 
-  questions.documents = await Promise.all(
-    questions.documents.map(async (ques) => {
+  questions.rows = await Promise.all(
+    questions.rows.map(async (ques) => {
       const [author, answers, votes] = await Promise.all([
         users.get<UserPrefs>(ques.authorId),
-        databases.listDocuments(db, answerCollection, [
-          Query.equal("questionId", ques.$id),
-          Query.limit(1), // for optimization
-        ]),
-        databases.listDocuments(db, voteCollection, [
-          Query.equal("type", "question"),
-          Query.equal("typeId", ques.$id),
-          Query.limit(1), // for optimization
-        ]),
+        tablesDB.listRows({
+          databaseId: db,
+          tableId: answerCollection,
+          queries: [
+            Query.equal("questionId", ques.$id),
+            Query.limit(1), // for optimization
+          ],
+        }),
+        tablesDB.listRows({
+          databaseId: db,
+          tableId: voteCollection,
+          queries: [
+            Query.equal("type", "question"),
+            Query.equal("typeId", ques.$id),
+            Query.limit(1), // for optimization
+          ],
+        }),
       ]);
 
       return {
@@ -67,7 +75,7 @@ const Page = async ({
         <p>{questions.total} questions</p>
       </div>
       <div className="mb-4 max-w-3xl space-y-6">
-        {questions.documents.map((ques) => (
+        {questions.rows.map((ques: any) => (
           <QuestionCard key={ques.$id} ques={ques} />
         ))}
       </div>

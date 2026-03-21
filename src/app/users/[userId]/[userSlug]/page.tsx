@@ -1,8 +1,8 @@
-import { databases, users } from "@/src/models/server/config";
+import { tablesDB, users } from "@/src/models/server/config";
 import { UserPrefs } from "@/src/store/Auth";
 import React from "react";
-import { MagicCard, MagicContainer } from "@/components/magicui/magic-card";
-import NumberTicker from "@/components/magicui/number-ticker";
+import { MagicCard } from "@/components/magicui/magic-card";
+import { NumberTicker } from "@/components/magicui/number-ticker";
 import { answerCollection, db, questionCollection } from "@/src/models/name";
 import { Query } from "node-appwrite";
 
@@ -12,22 +12,29 @@ const Page = async ({
   params: { userId: string; userSlug: string };
 }) => {
   const [user, questions, answers] = await Promise.all([
-    users.get<UserPrefs>(params.userId),
-    databases.listDocuments(db, questionCollection, [
-      Query.equal("authorId", params.userId),
-      Query.limit(1), // for optimization
-    ]),
-    databases.listDocuments(db, answerCollection, [
-      Query.equal("authorId", params.userId),
-      Query.limit(1), // for optimization
-    ]),
+    users.get<UserPrefs>({ userId: params.userId }),
+    tablesDB.listRows({
+      databaseId: db,
+      tableId: questionCollection,
+      queries: [
+        Query.equal("authorId", params.userId),
+        Query.limit(1), // for optimization
+      ],
+    }),
+    tablesDB.listRows({
+      databaseId: db,
+      tableId: answerCollection,
+      queries: [
+        Query.equal("authorId", params.userId),
+        Query.limit(1), // for optimization
+      ],
+    }),
   ]);
 
   return (
-    <MagicContainer
-      className={
-        "flex h-[500px] w-full flex-col gap-4 lg:h-[250px] lg:flex-row"
-      }
+    // supposed to be a magic container here.
+    <MagicCard
+      className={"flex h-125 w-full flex-col gap-4 lg:h-62.5 lg:flex-row"}
     >
       <MagicCard className="flex w-full cursor-pointer flex-col items-center justify-center overflow-hidden p-20 shadow-2xl">
         <div className="absolute inset-x-4 top-4">
@@ -56,7 +63,7 @@ const Page = async ({
         </p>
         <div className="pointer-events-none absolute inset-0 h-full bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.3),rgba(255,255,255,0))]" />
       </MagicCard>
-    </MagicContainer>
+    </MagicCard>
   );
 };
 
