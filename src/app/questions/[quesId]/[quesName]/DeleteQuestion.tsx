@@ -1,6 +1,6 @@
 "use client";
 
-import { databases } from "@/src/models/client/config";
+import { tablesDB } from "@/src/models/client/config";
 import { db, questionCollection } from "@/src/models/name";
 import { useAuthStore } from "@/src/store/Auth";
 import { IconTrash } from "@tabler/icons-react";
@@ -19,7 +19,11 @@ const DeleteQuestion = ({
 
   const deleteQuestion = async () => {
     try {
-      await databases.deleteDocument(db, questionCollection, questionId);
+      await tablesDB.deleteRow({
+        databaseId: db,
+        tableId: questionCollection,
+        rowId: questionId,
+      });
 
       router.push("/questions");
     } catch (error: any) {

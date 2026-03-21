@@ -6,8 +6,9 @@ import slugify from "@/src/utils/slugify";
 import { Models } from "appwrite";
 import { useRouter } from "next/navigation";
 import React from "react";
+import { Questions } from "@/types/appwrite";
 
-const EditQues = ({ question }: { question: Models.Document }) => {
+const EditQues = ({ question }: { question: Questions }) => {
   const { user } = useAuthStore();
   const router = useRouter();
 

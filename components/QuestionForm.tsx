@@ -19,6 +19,7 @@ import {
 } from "@/src/models/name";
 import { Confetti } from "@/components/magicui/confetti";
 import confetti from "canvas-confetti";
+import { Questions } from "@/types/appwrite";
 
 const LabelInputContainer = ({
   children,
@@ -41,13 +42,7 @@ const LabelInputContainer = ({
 };
 
 // Define our own type, the & means it has both the properties in appwrite's Row (like $id, $createdAt) and whatever that we add.
-type QuestionRow = Models.Row & {
-  title: string;
-  content: string;
-  authorId: string;
-  tags: string[];
-  attachmentId: string;
-};
+type QuestionRow = Questions;
 
 /**
  * ******************************************************************************
@@ -135,7 +130,10 @@ const QuestionForm = ({ question }: { question?: QuestionRow }) => {
     const attachmentId = await (async () => {
       if (!formData.attachment) return question?.attachmentId as string;
 
-      await storage.deleteFile(questionAttachmentBucket, question.attachmentId);
+      await storage.deleteFile({
+        bucketId: questionAttachmentBucket,
+        fileId: question.attachmentId as string,
+      });
 
       const file = await storage.createFile(
         questionAttachmentBucket,

@@ -1,7 +1,7 @@
 import Pagination from "@/components/Pagination";
 import { MarkdownPreview } from "@/components/RTE";
 import { answerCollection, db, questionCollection } from "@/src/models/name";
-import { databases } from "@/src/models/server/config";
+import { tablesDB } from "@/src/models/server/config";
 import slugify from "@/src/utils/slugify";
 import Link from "next/link";
 import { Query } from "node-appwrite";
@@ -23,16 +23,20 @@ const Page = async ({
     Query.limit(25),
   ];
 
-  const answers = await databases.listDocuments(db, answerCollection, queries);
+  const answers = await tablesDB.listRows({
+    databaseId: db,
+    tableId: answerCollection,
+    queries,
+  });
 
-  answers.documents = await Promise.all(
-    answers.documents.map(async (ans) => {
-      const question = await databases.getDocument(
-        db,
-        questionCollection,
-        ans.questionId,
-        [Query.select(["title"])],
-      );
+  answers.rows = await Promise.all(
+    answers.rows.map(async (ans) => {
+      const question = await tablesDB.getRow({
+        databaseId: db,
+        tableId: questionCollection,
+        rowId: ans.questionId,
+        queries: [Query.select(["title"])],
+      });
       return { ...ans, question };
     }),
   );
@@ -43,7 +47,7 @@ const Page = async ({
         <p>{answers.total} answers</p>
       </div>
       <div className="mb-4 max-w-3xl space-y-6">
-        {answers.documents.map((ans) => (
+        {answers.rows.map((ans) => (
           <div key={ans.$id}>
             <div className="max-h-40 overflow-auto">
               <MarkdownPreview
