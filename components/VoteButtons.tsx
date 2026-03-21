@@ -5,7 +5,7 @@ import { db, voteCollection } from "@/src/models/name";
 import { useAuthStore } from "@/src/store/Auth";
 import { cn } from "@/lib/utils";
 import { IconCaretUpFilled, IconCaretDownFilled } from "@tabler/icons-react";
-import { ID, Models, Query } from "appwrite";
+import { Query } from "appwrite";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { RowList, VoteRow } from "@/types/ui";
@@ -23,7 +23,10 @@ const VoteButtons = ({
   downvotes: RowList<VoteRow>;
   className?: string;
 }) => {
-  const [votedDocument, setVotedDocument] = React.useState<VoteRow | null>(); // undefined means not fetched yet
+  const [votedRow, setVotedRow] = React.useState<VoteRow | null | undefined>(
+    undefined,
+  );
+
   const [voteResult, setVoteResult] = React.useState<number>(
     upvotes.total - downvotes.total,
   );
@@ -33,25 +36,28 @@ const VoteButtons = ({
 
   React.useEffect(() => {
     (async () => {
-      if (user) {
-        const response: RowList<VoteRow> = await tablesDB.listRows({
-          databaseId: db,
-          tableId: voteCollection,
-          queries: [
-            Query.equal("type", type),
-            Query.equal("typeId", id),
-            Query.equal("votedById", user.$id),
-          ],
-        });
-        setVotedDocument(() => response.rows[0] || null);
+      if (!user) {
+        setVotedRow(null);
+        return;
       }
+
+      const response: RowList<VoteRow> = await tablesDB.listRows({
+        databaseId: db,
+        tableId: voteCollection,
+        queries: [
+          Query.equal("type", type),
+          Query.equal("typeId", id),
+          Query.equal("votedById", user.$id),
+        ],
+      });
+
+      setVotedRow(response.rows[0] ?? null);
     })();
   }, [user, id, type]);
 
   const toggleUpvote = async () => {
     if (!user) return router.push("/login");
-
-    if (votedDocument === undefined) return;
+    if (votedRow === undefined) return;
 
     try {
       const response = await fetch(`/api/vote`, {
@@ -65,11 +71,10 @@ const VoteButtons = ({
       });
 
       const data = await response.json();
-
       if (!response.ok) throw data;
 
-      setVoteResult(() => data.data.voteResult);
-      setVotedDocument(() => data.data.document);
+      setVoteResult(data.data.voteResult);
+      setVotedRow(data.data.row);
     } catch (error: any) {
       window.alert(error?.message || "Something went wrong");
     }
@@ -77,8 +82,7 @@ const VoteButtons = ({
 
   const toggleDownvote = async () => {
     if (!user) return router.push("/login");
-
-    if (votedDocument === undefined) return;
+    if (votedRow === undefined) return;
 
     try {
       const response = await fetch(`/api/vote`, {
@@ -92,11 +96,10 @@ const VoteButtons = ({
       });
 
       const data = await response.json();
-
       if (!response.ok) throw data;
 
-      setVoteResult(() => data.data.voteResult);
-      setVotedDocument(() => data.data.document);
+      setVoteResult(data.data.voteResult);
+      setVotedRow(data.data.row);
     } catch (error: any) {
       window.alert(error?.message || "Something went wrong");
     }
@@ -110,9 +113,10 @@ const VoteButtons = ({
       )}
     >
       <button
+        type="button"
         className={cn(
           "flex h-10 w-10 items-center justify-center rounded-full border p-1 duration-200 hover:bg-white/10",
-          votedDocument && votedDocument.voteStatus === "upvoted"
+          votedRow?.voteStatus === "upvoted"
             ? "border-orange-500 text-orange-500"
             : "border-white/30",
         )}
@@ -120,11 +124,14 @@ const VoteButtons = ({
       >
         <IconCaretUpFilled />
       </button>
+
       <span>{voteResult}</span>
+
       <button
+        type="button"
         className={cn(
           "flex h-10 w-10 items-center justify-center rounded-full border p-1 duration-200 hover:bg-white/10",
-          votedDocument && votedDocument.voteStatus === "downvoted"
+          votedRow?.voteStatus === "downvoted"
             ? "border-orange-500 text-orange-500"
             : "border-white/30",
         )}
