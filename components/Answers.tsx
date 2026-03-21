@@ -12,11 +12,15 @@ import slugify from "@/src/utils/slugify";
 import Link from "next/link";
 import { IconTrash } from "@tabler/icons-react";
 
+// define our own types
+
+import type { RowList, UserPreview, CommentRow, AnswerRow } from "@/types/ui";
+
 const Answers = ({
   answers: _answers,
   questionId,
 }: {
-  answers: Models.DocumentList<Models.Document>;
+  answers: RowList<AnswerRow>;
   questionId: string;
 }) => {
   const [answers, setAnswers] = React.useState(_answers);
@@ -44,15 +48,15 @@ const Answers = ({
       setNewAnswer(() => "");
       setAnswers((prev) => ({
         total: prev.total + 1,
-        documents: [
+        rows: [
           {
             ...data,
             author: user,
-            upvotesDocuments: { documents: [], total: 0 },
-            downvotesDocuments: { documents: [], total: 0 },
-            comments: { documents: [], total: 0 },
+            upvotesDocuments: { rows: [], total: 0 },
+            downvotesDocuments: { rows: [], total: 0 },
+            comments: { rows: [], total: 0 },
           },
-          ...prev.documents,
+          ...prev.rows,
         ],
       }));
     } catch (error: any) {
@@ -75,7 +79,7 @@ const Answers = ({
 
       setAnswers((prev) => ({
         total: prev.total - 1,
-        documents: prev.documents.filter((answer) => answer.$id !== answerId),
+        rows: prev.rows.filter((answer) => answer.$id !== answerId),
       }));
     } catch (error: any) {
       window.alert(error?.message || "Error deleting answer");
@@ -85,7 +89,7 @@ const Answers = ({
   return (
     <>
       <h2 className="mb-4 text-xl">{answers.total} Answers</h2>
-      {answers.documents.map((answer) => (
+      {answers.rows.map((answer) => (
         <div key={answer.$id} className="flex gap-4">
           <div className="flex shrink-0 flex-col items-center gap-4">
             <VoteButtons
@@ -111,7 +115,11 @@ const Answers = ({
             <div className="mt-4 flex items-center justify-end gap-1">
               <picture>
                 <img
-                  src={avatars.getInitials(answer.author.name, 36, 36).href}
+                  src={avatars.getInitials({
+                    name: answer.author.name,
+                    height: 36,
+                    width: 36,
+                  })}
                   alt={answer.author.name}
                   className="rounded-lg"
                 />

@@ -31,6 +31,14 @@ export default async function createVoteTable() {
     required: true,
   });
 
+  await tablesDB.createEnumColumn({
+    databaseId: db,
+    tableId: voteCollection,
+    key: "voteStatus",
+    elements: ["upvoted", "downvoted"],
+    required: true,
+  });
+
   await tablesDB.createVarcharColumn({
     databaseId: db,
     tableId: voteCollection,

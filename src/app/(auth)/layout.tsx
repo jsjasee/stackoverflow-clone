@@ -4,7 +4,7 @@
 // this file is copied from the layout.tsx in the main folder - did shadcn create the layout.tsx in the app folder?
 "use client";
 import { useRouter } from "next/router";
-import { useAuthStore } from "../store/Auth";
+import { useAuthStore } from "../../store/Auth";
 import React from "react";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {

@@ -11,22 +11,7 @@ import { ID, Models } from "appwrite";
 import Link from "next/link";
 import React from "react";
 
-type AuthorRow = Models.Row & {
-  name: string;
-};
-
-type CommentRow = Models.Row & {
-  content: string;
-  authorId: string;
-  type: "question" | "answer";
-  typeId: string;
-  author: AuthorRow;
-};
-
-type CommentRowList = {
-  total: number;
-  rows: CommentRow[];
-};
+import type { CommentRow, RowList, AuthorPreview } from "@/types/ui";
 
 const Comments = ({
   comments: _comments,
@@ -34,12 +19,13 @@ const Comments = ({
   typeId,
   className,
 }: {
-  comments: CommentRowList;
+  comments: RowList<CommentRow>;
   type: "question" | "answer";
   typeId: string;
   className?: string;
 }) => {
-  const [comments, setComments] = React.useState<CommentRowList>(_comments);
+  const [comments, setComments] =
+    React.useState<RowList<CommentRow>>(_comments);
   const [newComment, setNewComment] = React.useState("");
   const { user } = useAuthStore();
 
@@ -63,10 +49,7 @@ const Comments = ({
       setNewComment("");
       setComments((prev) => ({
         total: prev.total + 1,
-        rows: [
-          { ...(response as Models.Row), author: user } as any,
-          ...prev.rows,
-        ],
+        rows: [{ ...response, author: user } as any, ...prev.rows],
       }));
     } catch (error: any) {
       window.alert(error?.message || "Error creating comment");

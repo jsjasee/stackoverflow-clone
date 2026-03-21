@@ -1,6 +1,6 @@
 "use client";
 
-import { databases } from "@/src/models/client/config";
+import { tablesDB } from "@/src/models/client/config";
 import { db, voteCollection } from "@/src/models/name";
 import { useAuthStore } from "@/src/store/Auth";
 import { cn } from "@/lib/utils";
@@ -8,6 +8,7 @@ import { IconCaretUpFilled, IconCaretDownFilled } from "@tabler/icons-react";
 import { ID, Models, Query } from "appwrite";
 import { useRouter } from "next/navigation";
 import React from "react";
+import { RowList, VoteRow } from "@/types/ui";
 
 const VoteButtons = ({
   type,
@@ -18,12 +19,11 @@ const VoteButtons = ({
 }: {
   type: "question" | "answer";
   id: string;
-  upvotes: Models.DocumentList<Models.Document>;
-  downvotes: Models.DocumentList<Models.Document>;
+  upvotes: RowList<VoteRow>;
+  downvotes: RowList<VoteRow>;
   className?: string;
 }) => {
-  const [votedDocument, setVotedDocument] =
-    React.useState<Models.Document | null>(); // undefined means not fetched yet
+  const [votedDocument, setVotedDocument] = React.useState<VoteRow | null>(); // undefined means not fetched yet
   const [voteResult, setVoteResult] = React.useState<number>(
     upvotes.total - downvotes.total,
   );
@@ -34,12 +34,16 @@ const VoteButtons = ({
   React.useEffect(() => {
     (async () => {
       if (user) {
-        const response = await databases.listDocuments(db, voteCollection, [
-          Query.equal("type", type),
-          Query.equal("typeId", id),
-          Query.equal("votedById", user.$id),
-        ]);
-        setVotedDocument(() => response.documents[0] || null);
+        const response: RowList<VoteRow> = await tablesDB.listRows({
+          databaseId: db,
+          tableId: voteCollection,
+          queries: [
+            Query.equal("type", type),
+            Query.equal("typeId", id),
+            Query.equal("votedById", user.$id),
+          ],
+        });
+        setVotedDocument(() => response.rows[0] || null);
       }
     })();
   }, [user, id, type]);
