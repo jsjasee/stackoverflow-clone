@@ -25,8 +25,8 @@ const Page = async ({
 
   const queries = [
     Query.orderDesc("$createdAt"),
-    Query.offset((+page - 1) * 25), // change this number, '25' to limit the number of questions to display per page
-    Query.limit(25), // this number too. so if above is '25' here is also '25'
+    Query.offset((+page - 1) * 2), // this number is for the number of results per page also, like the number of results it will fetch from the page? how does pagination works? all i know is if this number and the number in the limit is changed, YOU MUST UPDATE THE NUMBER IN PAGINATION, aka the 'limit' param in pagination IN ORDER FOR IT TO WORK AS WELL.
+    Query.limit(2), // this is to limit the number of results returned to 2?
   ];
 
   if (resolvedSearchParams.tag) {
@@ -109,8 +109,9 @@ const Page = async ({
           <QuestionCard key={ques.$id} ques={ques} />
         ))}
       </div>
-      <Pagination total={questions.total} limit={25} />
+      <Pagination total={questions.total} limit={2} />
     </div>
+    // i guess the limit in the pagination determines the number of results per page?
   );
 };
 
