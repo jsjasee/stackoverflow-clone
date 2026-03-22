@@ -84,7 +84,7 @@ function LoginPage() {
         <LabelInputContainer className="mb-4">
           <Label htmlFor="email">Email Address</Label>
           <Input
-            className="text-black"
+            className="text-white"
             id="email"
             name="email"
             placeholder="projectmayhem@fc.com"
@@ -94,7 +94,7 @@ function LoginPage() {
         <LabelInputContainer className="mb-4">
           <Label htmlFor="password">Password</Label>
           <Input
-            className="text-black"
+            className="text-white"
             id="password"
             name="password"
             placeholder="••••••••"
