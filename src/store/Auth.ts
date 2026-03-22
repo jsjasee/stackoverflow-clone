@@ -22,7 +22,7 @@ interface IAuthStore {
   hydrated: boolean; // what is it even doing??
 
   setHydrated(): void; // putting things to hydrate them with react functionality..? this returns nothing so 'void'?
-  verifySession(): Promise<void>; // no idea as well..
+  verifySession(): Promise<boolean>; // no idea as well..
 
   login(
     email: string,
@@ -57,10 +57,17 @@ export const useAuthStore = create<IAuthStore>()(
 
       async verifySession() {
         try {
-          const session = await account.getSession({ sessionId: "current" });
-          set({ session }); // what the?
+          const [session, user] = await Promise.all([
+            account.getSession({ sessionId: "current" }),
+            account.get<UserPrefs>(),
+          ]);
+
+          set({ session, user, jwt: null }); // what the?
+          return true;
         } catch (error) {
           console.log(error);
+          set({ session: null, jwt: null, user: null });
+          return false;
         }
       },
 

@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/src/store/Auth";
 import { IconBrandGithub, IconBrandGoogle } from "@tabler/icons-react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 
 const BottomGradient = () => {
@@ -32,8 +33,19 @@ const LabelInputContainer = ({
 
 function LoginPage() {
   const { login } = useAuthStore();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState("");
+
+  const nextPath = searchParams.get("next");
+  const redirectTo =
+    nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//")
+      ? nextPath
+      : "/";
+  const registerHref = nextPath
+    ? `/register?next=${encodeURIComponent(nextPath)}`
+    : "/register";
 
   const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -58,6 +70,9 @@ function LoginPage() {
 
     if (loginResponse.error) {
       setError(() => loginResponse.error!.message);
+    } else {
+      router.replace(redirectTo);
+      return;
     }
     setIsLoading(false);
   };
@@ -69,7 +84,7 @@ function LoginPage() {
       <p className="mt-2 max-w-sm text-sm text-neutral-600 dark:text-neutral-300">
         Login to OpenCode
         <br /> If you don&apos;t have an account,{" "}
-        <Link href="/register" className="text-orange-500 hover:underline">
+        <Link href={registerHref} className="text-orange-500 hover:underline">
           register
         </Link>{" "}
         with OpenCode

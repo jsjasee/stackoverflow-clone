@@ -1,5 +1,7 @@
 "use client";
 import QuestionForm from "@/components/QuestionForm";
+import { useAuthStore } from "@/src/store/Auth";
+import { usePathname, useRouter } from "next/navigation";
 import React from "react";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 import { BorderBeam } from "@/components/magicui/border-beam";
@@ -7,6 +9,59 @@ import { DotPattern } from "@/components/magicui/dot-pattern";
 import { SparklesText } from "@/components/magicui/sparkles-text";
 
 function AskQuestionPage() {
+  const { hydrated, verifySession } = useAuthStore();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [hasAccess, setHasAccess] = React.useState(false);
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    if (!hydrated) return;
+
+    const verifyAccess = async () => {
+      const isAuthenticated = await verifySession();
+
+      if (cancelled) return;
+
+      if (!isAuthenticated) {
+        router.replace(`/login?next=${encodeURIComponent(pathname)}`);
+        return;
+      }
+
+      setHasAccess(true);
+    };
+
+    void verifyAccess();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated, pathname, router, verifySession]);
+
+  if (!hydrated || !hasAccess) {
+    return (
+      <main className="relative min-h-screen overflow-hidden bg-neutral-950 pt-24 md:pt-28">
+        <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.16),transparent_30%),radial-gradient(circle_at_20%_80%,rgba(56,189,248,0.14),transparent_30%),radial-gradient(circle_at_80%_20%,rgba(168,85,247,0.12),transparent_26%),linear-gradient(to_bottom,#050816,#09090b)]" />
+
+        <DotPattern
+          className="absolute inset-0 -z-10 opacity-25 mask-[radial-gradient(ellipse_at_center,white,transparent_75%)]"
+          width={24}
+          height={24}
+          cx={1}
+          cy={1}
+          cr={1}
+        />
+
+        <BackgroundBeams className="-z-10 opacity-40" />
+
+        <div className="mx-auto flex min-h-[60vh] max-w-6xl items-center justify-center px-4 text-sm text-white/70 sm:px-6 lg:px-8">
+          Checking your session...
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-neutral-950 pt-24 md:pt-28">
       <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.16),transparent_30%),radial-gradient(circle_at_20%_80%,rgba(56,189,248,0.14),transparent_30%),radial-gradient(circle_at_80%_20%,rgba(168,85,247,0.12),transparent_26%),linear-gradient(to_bottom,#050816,#09090b)]" />

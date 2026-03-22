@@ -37,18 +37,25 @@
 
 import { BackgroundBeams } from "@/components/ui/background-beams";
 import { useAuthStore } from "@/src/store/Auth";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const { session } = useAuthStore();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const nextPath = searchParams.get("next");
+  const redirectTo =
+    nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//")
+      ? nextPath
+      : "/";
 
   React.useEffect(() => {
     if (session) {
-      router.push("/");
+      router.replace(redirectTo);
     }
-  }, [session, router]);
+  }, [redirectTo, router, session]);
 
   if (session) {
     return null;

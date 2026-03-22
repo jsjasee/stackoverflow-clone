@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { IconBrandGithub, IconBrandGoogle } from "@tabler/icons-react";
 import { useAuthStore } from "@/src/store/Auth";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const BottomGradient = () => {
   return (
@@ -34,8 +35,19 @@ const LabelInputContainer = ({
 
 function RegisterPage() {
   const { createAccount, login } = useAuthStore();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState("");
+
+  const nextPath = searchParams.get("next");
+  const redirectTo =
+    nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//")
+      ? nextPath
+      : "/";
+  const loginHref = nextPath
+    ? `/login?next=${encodeURIComponent(nextPath)}`
+    : "/login";
 
   // so this is saying in the submit event, we are receiving html which are html form elements?
   const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
@@ -73,6 +85,9 @@ function RegisterPage() {
 
       if (loginResponse.error) {
         setError(() => loginResponse.error!.message);
+      } else {
+        router.replace(redirectTo);
+        return;
       }
     }
 
@@ -91,7 +106,7 @@ function RegisterPage() {
       <p className="mt-2 max-w-sm text-sm text-neutral-600 dark:text-neutral-300">
         Signup with OpenCode if you you don&apos;t have an account.
         <br /> If you already have an account,{" "}
-        <Link href="/login" className="text-orange-500 hover:underline">
+        <Link href={loginHref} className="text-orange-500 hover:underline">
           login
         </Link>{" "}
         to OpenCode
