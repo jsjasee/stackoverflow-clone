@@ -14,7 +14,7 @@ const Search = () => {
     setSearch(() => searchParams.get("search") || "");
   }, [searchParams]);
 
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSearch = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     const newSearchParams = new URLSearchParams(searchParams);
     newSearchParams.set("search", search);

@@ -25,8 +25,8 @@ const Page = async ({
 
   const queries = [
     Query.orderDesc("$createdAt"),
-    Query.offset((+page - 1) * 25),
-    Query.limit(25),
+    Query.offset((+page - 1) * 25), // change this number, '25' to limit the number of questions to display per page
+    Query.limit(25), // this number too. so if above is '25' here is also '25'
   ];
 
   if (resolvedSearchParams.tag) {
