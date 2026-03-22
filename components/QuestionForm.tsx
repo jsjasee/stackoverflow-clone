@@ -100,11 +100,11 @@ const QuestionForm = ({ question }: { question?: QuestionRow }) => {
   const create = async () => {
     if (!formData.attachment) throw new Error("Please upload an image");
 
-    const storageResponse = await storage.createFile(
-      questionAttachmentBucket,
-      ID.unique(),
-      formData.attachment,
-    );
+    const storageResponse = await storage.createFile({
+      bucketId: questionAttachmentBucket,
+      fileId: ID.unique(),
+      file: formData.attachment,
+    });
 
     const response = await tablesDB.createRow({
       databaseId: db,

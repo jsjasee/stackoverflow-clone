@@ -9,15 +9,18 @@ import { Query } from "node-appwrite";
 const Page = async ({
   params,
 }: {
-  params: { userId: string; userSlug: string };
+  params: Promise<{ userId: string; userSlug: string }>;
 }) => {
+  const { userId, userSlug } = await params;
+  console.log(userId);
+
   const [user, questions, answers] = await Promise.all([
-    users.get<UserPrefs>({ userId: params.userId }),
+    users.get<UserPrefs>({ userId: userId }),
     tablesDB.listRows({
       databaseId: db,
       tableId: questionCollection,
       queries: [
-        Query.equal("authorId", params.userId),
+        Query.equal("authorId", userId),
         Query.limit(1), // for optimization
       ],
     }),
@@ -25,7 +28,7 @@ const Page = async ({
       databaseId: db,
       tableId: answerCollection,
       queries: [
-        Query.equal("authorId", params.userId),
+        Query.equal("authorId", userId),
         Query.limit(1), // for optimization
       ],
     }),
@@ -33,12 +36,10 @@ const Page = async ({
 
   return (
     // supposed to be a magic container here.
-    <MagicCard
-      className={"flex h-125 w-full flex-col gap-4 lg:h-62.5 lg:flex-row"}
-    >
+    <div className={"flex h-125 w-full flex-col gap-4 lg:h-62.5 lg:flex-row"}>
       <MagicCard className="flex w-full cursor-pointer flex-col items-center justify-center overflow-hidden p-20 shadow-2xl">
         <div className="absolute inset-x-4 top-4">
-          <h2 className="text-xl font-medium">Reputation</h2>
+          <h2 className="text-xl font-medium p-2">Reputation</h2>
         </div>
         <p className="z-10 whitespace-nowrap text-4xl font-medium text-gray-800 dark:text-gray-200">
           <NumberTicker value={user.prefs.reputation} />
@@ -47,7 +48,7 @@ const Page = async ({
       </MagicCard>
       <MagicCard className="flex w-full cursor-pointer flex-col items-center justify-center overflow-hidden p-20 shadow-2xl">
         <div className="absolute inset-x-4 top-4">
-          <h2 className="text-xl font-medium">Questions asked</h2>
+          <h2 className="text-xl font-medium p-2">Questions asked</h2>
         </div>
         <p className="z-10 whitespace-nowrap text-4xl font-medium text-gray-800 dark:text-gray-200">
           <NumberTicker value={questions.total} />
@@ -56,14 +57,14 @@ const Page = async ({
       </MagicCard>
       <MagicCard className="flex w-full cursor-pointer flex-col items-center justify-center overflow-hidden p-20 shadow-2xl">
         <div className="absolute inset-x-4 top-4">
-          <h2 className="text-xl font-medium">Answers given</h2>
+          <h2 className="text-xl font-medium p-2">Answers given</h2>
         </div>
         <p className="z-10 whitespace-nowrap text-4xl font-medium text-gray-800 dark:text-gray-200">
           <NumberTicker value={answers.total} />
         </p>
         <div className="pointer-events-none absolute inset-0 h-full bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.3),rgba(255,255,255,0))]" />
       </MagicCard>
-    </MagicCard>
+    </div>
   );
 };
 

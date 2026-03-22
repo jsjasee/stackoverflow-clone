@@ -18,7 +18,7 @@ import { storage } from "@/src/models/client/config";
 import { UserPrefs } from "@/src/store/Auth";
 import convertDateToRelativeTime from "@/src/utils/relativeTime";
 import slugify from "@/src/utils/slugify";
-import { IconEdit } from "@tabler/icons-react";
+import toPlainObject from "@/src/utils/toPlainObject";
 import Link from "next/link";
 import { Query } from "node-appwrite";
 import React from "react";
@@ -29,27 +29,28 @@ import { TracingBeam } from "@/components/ui/tracing-beam";
 const Page = async ({
   params,
 }: {
-  params: { quesId: string; quesName: string };
+  params: Promise<{ quesId: string; quesName: string }>;
 }) => {
+  const { quesId } = await params;
   const [question, answers, upvotes, downvotes, comments] = await Promise.all([
     tablesDB.getRow({
       databaseId: db,
       tableId: questionCollection,
-      rowId: params.quesId,
+      rowId: quesId,
     }),
     tablesDB.listRows({
       databaseId: db,
       tableId: answerCollection,
       queries: [
         Query.orderDesc("$createdAt"),
-        Query.equal("questionId", params.quesId),
+        Query.equal("questionId", quesId),
       ],
     }),
     tablesDB.listRows({
       databaseId: db,
       tableId: voteCollection,
       queries: [
-        Query.equal("typeId", params.quesId),
+        Query.equal("typeId", quesId),
         Query.equal("type", "question"),
         Query.equal("voteStatus", "upvoted"),
         Query.limit(1), // for optimization
@@ -59,7 +60,7 @@ const Page = async ({
       databaseId: db,
       tableId: voteCollection,
       queries: [
-        Query.equal("typeId", params.quesId),
+        Query.equal("typeId", quesId),
         Query.equal("type", "question"),
         Query.equal("voteStatus", "downvoted"),
         Query.limit(1), // for optimization
@@ -70,7 +71,7 @@ const Page = async ({
       tableId: commentCollection,
       queries: [
         Query.equal("type", "question"),
-        Query.equal("typeId", params.quesId),
+        Query.equal("typeId", quesId),
         Query.orderDesc("$createdAt"),
       ],
     }),
@@ -156,6 +157,11 @@ const Page = async ({
     ),
   ]);
 
+  const serializedAnswers = toPlainObject(answers);
+  const serializedUpvotes = toPlainObject(upvotes);
+  const serializedDownvotes = toPlainObject(downvotes);
+  const serializedComments = toPlainObject(comments);
+
   return (
     <TracingBeam className="container pl-6">
       <Particles
@@ -192,8 +198,8 @@ const Page = async ({
               type="question"
               id={question.$id}
               className="w-full"
-              upvotes={upvotes as any}
-              downvotes={downvotes as any}
+              upvotes={serializedUpvotes as any}
+              downvotes={serializedDownvotes as any}
             />
             <EditQuestion
               questionId={question.$id}
@@ -256,7 +262,7 @@ const Page = async ({
               </div>
             </div>
             <Comments
-              comments={comments as any}
+              comments={serializedComments as any}
               className="mt-4"
               type="question"
               typeId={question.$id}
@@ -264,7 +270,7 @@ const Page = async ({
             <hr className="my-4 border-white/40" />
           </div>
         </div>
-        <Answers answers={answers as any} questionId={question.$id} />
+        <Answers answers={serializedAnswers as any} questionId={question.$id} />
       </div>
     </TracingBeam>
   );

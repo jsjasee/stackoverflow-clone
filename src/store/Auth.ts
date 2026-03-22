@@ -94,9 +94,15 @@ export const useAuthStore = create<IAuthStore>()(
         }
       },
 
-      async createAccount(name: string, email: string, password: string) {
+      async createAccount(email: string, password: string, name: string) {
         try {
-          await account.create({ userId: ID.unique(), email, password, name });
+          console.log("😭", email);
+          await account.create({
+            userId: ID.unique(),
+            email: email,
+            password: password,
+            name,
+          });
           return { success: true };
         } catch (error) {
           console.log(error);
